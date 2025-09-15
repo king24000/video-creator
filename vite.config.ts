@@ -23,11 +23,11 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:3123',
+        target: 'video-creator-cpmy.vercel.app',
         changeOrigin: true,
       },
       '/mcp': {
-        target: 'http://localhost:3123',
+        target: 'video-creator-cpmy.vercel.app',
         changeOrigin: true,
       },
     },
