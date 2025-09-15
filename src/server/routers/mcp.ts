@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Router, Request, Response } from "express";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import z from "zod";
@@ -8,13 +8,16 @@ import { logger } from "../../logger";
 import { renderConfig, sceneInput } from "../../types/shorts";
 
 export class MCPRouter {
-  router: express.Router;
+  // Use the Router type directly
+  router: Router;
   shortCreator: ShortCreator;
-  transports: { [sessionId: string]: SSEServerTransport } = {};
+  // Provide a more precise type for transports
+  transports: Record<string, SSEServerTransport> = {};
   mcpServer: McpServer;
+
   constructor(shortCreator: ShortCreator) {
-    this.router = express.Router();
     this.shortCreator = shortCreator;
+    this.router = express.Router();
 
     this.mcpServer = new McpServer({
       name: "Short Creator",
@@ -72,18 +75,20 @@ export class MCPRouter {
   }
 
   private setupRoutes() {
-    this.router.get("/sse", async (req, res) => {
+    // Annotate req and res with Request and Response
+    this.router.get("/sse", async (req: Request, res: Response) => {
       logger.info("SSE GET request received");
 
       const transport = new SSEServerTransport("/mcp/messages", res);
       this.transports[transport.sessionId] = transport;
+      // Clean up when connection closes
       res.on("close", () => {
         delete this.transports[transport.sessionId];
       });
       await this.mcpServer.connect(transport);
     });
 
-    this.router.post("/messages", async (req, res) => {
+    this.router.post("/messages", async (req: Request, res: Response) => {
       logger.info("SSE POST request received");
 
       const sessionId = req.query.sessionId as string;
